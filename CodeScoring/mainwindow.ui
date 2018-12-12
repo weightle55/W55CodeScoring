@@ -130,9 +130,9 @@
     <widget class="QWidget" name="verticalLayoutWidget">
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QPushButton" name="inputFolderButton">
+       <widget class="QPushButton" name="LoadFiles">
         <property name="text">
-         <string>Input Folder</string>
+         <string>Load Files</string>
         </property>
        </widget>
       </item>
@@ -145,22 +145,6 @@
       </item>
       <item>
        <widget class="QListWidget" name="InputFileList"/>
-      </item>
-      <item>
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Expanding</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-       </spacer>
       </item>
      </layout>
     </widget>
@@ -178,13 +162,6 @@
           <string>Files</string>
          </property>
         </item>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="answerFolderButton">
-        <property name="text">
-         <string>Answer files or codes folder</string>
-        </property>
        </widget>
       </item>
       <item>

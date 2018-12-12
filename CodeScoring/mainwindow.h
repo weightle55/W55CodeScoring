@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QtXlsx>
+#include <QProcess>
 
 namespace Ui {
 class MainWindow;
@@ -24,19 +25,18 @@ private slots:
 
     void on_ScoringButton_clicked();
 
-    void on_inputFolderButton_clicked();
-
     void on_exitButton_clicked();
 
     void on_answerCombo_activated(int index);
 
-    void on_answerFolderButton_clicked();
+    void on_LoadFiles_clicked();
 
 private:
     Ui::MainWindow *ui;
+    QDir rootPath;
     QDir codefile_folder_dir;
     QDir input_folder_dir;
-    QDir output_folder_dir;
+    QDir answer_folder_dir;
 
     QFileInfoList codeFileList;
     QFileInfoList inputFileList;
@@ -44,7 +44,13 @@ private:
 
     QFile answerCodeFile;
     QString answerCodeString;
+
+    QString compileOption;
+    QString saveFileName;
+
+    bool isInitialized;
     double timeLimit;
+    int ScoringOps;
 };
 
 #endif // MAINWINDOW_H
