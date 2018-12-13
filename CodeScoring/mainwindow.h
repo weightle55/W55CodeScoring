@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QtXlsx>
 #include <QProcess>
+#include <QDebug>
 
 namespace Ui {
 class MainWindow;
@@ -37,6 +38,9 @@ private:
     QDir codefile_folder_dir;
     QDir input_folder_dir;
     QDir answer_folder_dir;
+    QDir xlsx_output_folder;
+    QDir temp_execute_folder;
+    QDir answer_output_folder;
 
     QFileInfoList codeFileList;
     QFileInfoList inputFileList;
@@ -47,6 +51,8 @@ private:
 
     QString compileOption;
     QString saveFileName;
+
+    QProcess* gnu_process;
 
     bool isInitialized;
     double timeLimit;

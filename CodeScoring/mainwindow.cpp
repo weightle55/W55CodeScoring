@@ -2,12 +2,11 @@
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
+    QMainWindow(parent), gnu_process(nullptr),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     ui->LoadFiles->setEnabled(false);
-    ui->ScoringButton->setEnabled(false);
     isInitialized=false;
 }
 
@@ -18,8 +17,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_OpenFolder_clicked()
 {
-    isInitialized=true;
-
     rootPath=QFileDialog::getExistingDirectory();
 
     QString rps=rootPath.absolutePath();
@@ -41,6 +38,21 @@ void MainWindow::on_OpenFolder_clicked()
     }
     answer_folder_dir=QDir(rps+"/AnsCodeOrFiles");
 
+    if(!answer_folder_dir.exists("Answerout")){
+        answer_folder_dir.mkdir("Answerout");
+    }
+    answer_output_folder=QDir(answer_folder_dir.absolutePath()+"/Answerout");
+
+    if(!rootPath.exists("xlsx_output")){
+        rootPath.mkdir("xlsx_output");
+    }
+    xlsx_output_folder=QDir(rps+"/xlsx_output");
+
+    if(!codefile_folder_dir.exists("execute_files")){
+        codefile_folder_dir.mkdir("execute_files");
+    }
+    temp_execute_folder=QDir(codefile_folder_dir.absolutePath()+"/execute_files");
+
     ui->LoadFiles->setEnabled(true);
 
 //    codefile_folder_dir=QFileDialog::getExistingDirectory();
@@ -49,6 +61,8 @@ void MainWindow::on_OpenFolder_clicked()
 
 void MainWindow::on_LoadFiles_clicked()
 {
+    isInitialized=true;
+
     //Load SavedCodesFiles
     QStringList filter;
     filter << "*.c" <<"*.cpp";
@@ -88,15 +102,7 @@ void MainWindow::on_LoadFiles_clicked()
         QFileInfo fileInfo = outputFileList.at(i);
         ui->answerFileList->addItem(QString("%1").arg(fileInfo.fileName()));
     }
-
-    ui->ScoringButton->setEnabled(true);
 }
-
-//void MainWindow::on_inputFolderButton_clicked()
-//{
-
-//    ui->answerFolderButton->setEnabled(true);
-//}
 
 
 void MainWindow::on_answerCombo_activated(int index)
@@ -106,14 +112,26 @@ void MainWindow::on_answerCombo_activated(int index)
 
 void MainWindow::on_ScoringButton_clicked()
 {
+    if(!isInitialized){
+        QString ini="Open Folder and Load it first";
+        QMessageBox::warning(0,"No Initializing Error",ini);
+        return;
+    }
+
+    if(!gnu_process){
+        gnu_process= new QProcess(this);
+    }
     QString program = "g++";
     QStringList command;
-    QFileInfo fileinfo = answerCodeString;
-    command <<"-std=c++14 "<<answerCodeString<<" "<<"-o "<<QString("%1").arg(fileinfo.fileName().split(".",QString::SkipEmptyParts).at(0));
-    ui->answerFileList->addItem(QString("%1").arg(command.at(4)));
-    QProcess *myprocess = new QProcess(this);
-    myprocess->execute(program,command);
-
+    command << "-std=c++14"<<outputFileList.at(0).filePath()<<"-o"<<temp_execute_folder.absolutePath()+"/"+outputFileList.at(0).baseName();
+    QProcessEnvironment env= QProcessEnvironment::systemEnvironment();
+    gnu_process->setProcessEnvironment(env);
+    gnu_process->setProcessChannelMode(QProcess::MergedChannels);
+    gnu_process->start(program,command);
+    gnu_process->waitForFinished();
+    QString output(gnu_process->readAllStandardOutput());
+    //QMessageBox::warning(0,"output", output);
+    gnu_process->terminate();
     //int i=myprocess->exitCode();
 }
 
