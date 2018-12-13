@@ -40,6 +40,7 @@ private:
     QDir answer_folder_dir;
     QDir xlsx_output_folder;
     QDir temp_execute_folder;
+    QDir answer_executefile_folder;
     QDir answer_output_folder;
 
     QFileInfoList codeFileList;

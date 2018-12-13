@@ -7,6 +7,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->LoadFiles->setEnabled(false);
+
+    ui->progressBar->setValue(0);
     isInitialized=false;
 }
 
@@ -41,7 +43,12 @@ void MainWindow::on_OpenFolder_clicked()
     if(!answer_folder_dir.exists("Answerout")){
         answer_folder_dir.mkdir("Answerout");
     }
-    answer_output_folder=QDir(answer_folder_dir.absolutePath()+"/Answerout");
+    answer_executefile_folder=QDir(answer_folder_dir.absolutePath()+"/Answerout");
+
+    if(!answer_executefile_folder.exists("output")){
+        answer_executefile_folder.mkdir("output");
+    }
+    answer_output_folder=QDir(answer_executefile_folder.absolutePath()+"/output");
 
     if(!rootPath.exists("xlsx_output")){
         rootPath.mkdir("xlsx_output");
@@ -133,7 +140,7 @@ void MainWindow::on_ScoringButton_clicked()
     //make Answer output
     if(ui->answerCombo->currentIndex()==0){
         command.clear();
-        outFileName=answer_output_folder.absolutePath()+"/"+outputFileList.at(0).baseName();
+        outFileName=answer_executefile_folder.absolutePath()+"/"+outputFileList.at(0).baseName();
 
         switch(answerCompileOption){
         case 0: program="gcc"; command << outputFileList.at(0).filePath()<<"-o"<<outFileName; break;
@@ -163,7 +170,7 @@ void MainWindow::on_ScoringButton_clicked()
             QString savedfileName=inputFileList.at(i).baseName()+"out.txt";
             //command << "<"+inputFileList.at(i).filePath() << ">"+answer_output_folder.absolutePath()+"/"+savedfileName;
 
-            QMessageBox::warning(0,"output", "<"+inputFileList.at(i).filePath());
+            //QMessageBox::warning(0,"output", "<"+inputFileList.at(i).filePath());
 
             gnu_process->setProcessChannelMode(QProcess::SeparateChannels);
             gnu_process->setStandardInputFile(inputFileList.at(i).filePath());
@@ -174,9 +181,9 @@ void MainWindow::on_ScoringButton_clicked()
             gnu_process->terminate();
         }
         ui->ProcessingMessage->setText("Complete to make Answer Files");
+        ui->progressBar->setValue(10);
 
     }
-
 
 //    if(!gnu_process){
 //        gnu_process= new QProcess(this);
@@ -195,6 +202,7 @@ void MainWindow::on_ScoringButton_clicked()
 //    //int i=myprocess->exitCode();
 
     ui->ScoringButton->setEnabled(true);
+    ui->progressBar->setValue(100);
 }
 
 void MainWindow::on_exitButton_clicked()
