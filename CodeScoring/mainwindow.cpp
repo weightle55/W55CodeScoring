@@ -60,6 +60,11 @@ void MainWindow::on_OpenFolder_clicked()
     }
     temp_execute_folder=QDir(codefile_folder_dir.absolutePath()+"/execute_files");
 
+    if(!temp_execute_folder.exists("output")){
+        temp_execute_folder.mkdir("output");
+    }
+    scored_output_dir=QDir(temp_execute_folder.absolutePath()+"/output");
+
     ui->LoadFiles->setEnabled(true);
 
 //    codefile_folder_dir=QFileDialog::getExistingDirectory();
@@ -128,8 +133,10 @@ void MainWindow::on_ScoringButton_clicked()
 
     ui->ScoringButton->setEnabled(false);
 
-    QProcessEnvironment env= QProcessEnvironment::systemEnvironment();
+    QString cellfile=xlsx_output_folder.absolutePath()+"/"+"result.xlsx";
+    outexcelfile.saveAs(cellfile);
 
+    QProcessEnvironment env= QProcessEnvironment::systemEnvironment();
 
     int answerCompileOption = ui ->answerEnvironment->currentIndex();
     QString program;
@@ -137,7 +144,10 @@ void MainWindow::on_ScoringButton_clicked()
     QString outFileName;
     QStringList command;
 
-    //make Answer output
+
+    /**
+     * Compiling Answer code file and making output txt file
+     */
     if(ui->answerCombo->currentIndex()==0){
         command.clear();
         outFileName=answer_executefile_folder.absolutePath()+"/"+outputFileList.at(0).baseName();
@@ -167,22 +177,108 @@ void MainWindow::on_ScoringButton_clicked()
             ui->ProcessingMessage->setText("Processing "+inputFileList.at(i).baseName());
 
             command.clear();
-            QString savedfileName=inputFileList.at(i).baseName()+"out.txt";
-            //command << "<"+inputFileList.at(i).filePath() << ">"+answer_output_folder.absolutePath()+"/"+savedfileName;
-
-            //QMessageBox::warning(0,"output", "<"+inputFileList.at(i).filePath());
+            QString savedfileName=inputFileList.at(i).baseName()+"out"+QString::number(i) +".txt";
 
             gnu_process->setProcessChannelMode(QProcess::SeparateChannels);
             gnu_process->setStandardInputFile(inputFileList.at(i).filePath());
             gnu_process->setStandardOutputFile(answer_output_folder.absolutePath()+"/"+savedfileName);
-            //gnu_process->set;
             gnu_process->start(program);
             gnu_process->waitForFinished();
             gnu_process->terminate();
         }
         ui->ProcessingMessage->setText("Complete to make Answer Files");
+
         ui->progressBar->setValue(10);
 
+    }
+    //end of compiling Answer code and making output txt file
+
+
+    /**
+      * Code File compiling
+      * */
+    if(codeFileList.empty()){
+        QMessageBox::warning(0,"No Initializing Error","Code Folder is empty");
+        ui->progressBar->setValue(0);
+        return;
+    }
+
+    if(!gnu_process){
+        gnu_process=new QProcess(this);
+    }
+    gnu_process->setProcessEnvironment(env);
+    gnu_process->setProcessChannelMode(QProcess::MergedChannels);
+
+    int ccompileoption=ui->cEnvCombo->currentIndex();
+    int cppcompileoption=ui->cppEnvCombo->currentIndex();
+    QString timel=ui->timeLimitInputBox();
+    timeLimit=timel.toDouble();
+
+    int timeout = timeLimit*1000;
+
+    QString cstdoption="-std=c99";
+    QString cppstdoption="-std=c++11";
+
+
+    switch(cppcompileoption){
+    case 0: break;
+    case 1: cppstdoption="-std=c++11"; break;
+    case 2: cppstdoption="-std=c++14"; break;
+    }
+
+    outexcelfile.write(0,0,"ID");
+    outexcelfile.save();
+    for(int i=0;i<inputFileList.size();i++){
+        outexcelfile.write(0,i+1,"TC_"+QString::number(i));
+        outexcelfile.save();
+    }
+
+    for(int i=0;i<codeFileList.size();i++){
+        QString extension=codeFileList.at(i).completeSuffix();
+        QString filename=temp_execute_folder.absolutePath()+"/"+codeFileList.at(i).baseName();
+        QString thisfile=codeFileList.at(i).filePath();
+
+        outexcelfile.write(i+1,0,codeFileList.at(i).baseName());
+
+        command.clear();
+        if(extension=="c"){
+            program="gcc";
+            if(ccompileoption==0){
+                command << thisfile <<"-o"<<filename;
+            }else{
+                command << cstdoption << thisfile << "-o" << filename;
+            }
+        }
+        else if(extension=="cpp"){
+            program="g++";
+            if(cppcompileoption==0){
+                command << thisfile << "-o" <<filename;
+            }else{
+                command << cppstdoption << thisfile << "-o" <<filename;
+            }
+        }
+
+        gnu_process->start(program,command);
+        gnu_process->waitForFinished();
+        int comerr=gnu_process->exitCode();
+        if(!comerr){
+            outexcelfile.write(i+1,1,"Compile Error");
+            outexcelfile.save();
+        }
+
+        program="./"+filename;
+        gnu_process->setProcessChannelMode(QProcess::SeparateChannels);
+        for(int j=0;j<inputFileList.size();j++){
+            QString savedtxt=codeFileList.at(i).baseName()+"out"+QString::number(j)+".txt";
+            gnu_process->setStandardInputFile(inputFileList.at(j).filePath());
+            gnu_process->setStandardOutputFile(scored_output_dir.absolutePath()+"/"+savedtxt);
+            gnu_process->start(program);
+            bool isTimeout = gnu_process->waitForFinished(timeout);
+            if(isTimeout==false){
+                outexcelfile.write(i+1,j+1,"Time out");
+                outexcelfile.save();
+            }
+        }
     }
 
 //    if(!gnu_process){

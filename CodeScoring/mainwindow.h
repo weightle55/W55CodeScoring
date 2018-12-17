@@ -42,6 +42,7 @@ private:
     QDir temp_execute_folder;
     QDir answer_executefile_folder;
     QDir answer_output_folder;
+    QDir scored_output_dir;
 
     QFileInfoList codeFileList;
     QFileInfoList inputFileList;
@@ -50,10 +51,12 @@ private:
     QFile answerCodeFile;
     QString answerCodeString;
 
-    QString compileOption;
+   // QString compileOption;
     QString saveFileName;
 
     QProcess* gnu_process;
+
+    QXlsx::Document outexcelfile;
 
     bool isInitialized;
     double timeLimit;

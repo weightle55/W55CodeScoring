@@ -96,7 +96,7 @@
          <widget class="QComboBox" name="cEnvCombo">
           <item>
            <property name="text">
-            <string>C90</string>
+            <string>C</string>
            </property>
           </item>
           <item>
@@ -194,7 +194,7 @@
          <widget class="QComboBox" name="answerEnvironment">
           <item>
            <property name="text">
-            <string>C90</string>
+            <string>C</string>
            </property>
           </item>
           <item>
