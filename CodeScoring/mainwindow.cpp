@@ -211,7 +211,7 @@ void MainWindow::on_ScoringButton_clicked()
 
     int ccompileoption=ui->cEnvCombo->currentIndex();
     int cppcompileoption=ui->cppEnvCombo->currentIndex();
-    QString timel=ui->timeLimitInputBox();
+    QString timel=ui->timeLimitInputBox->text();
     timeLimit=timel.toDouble();
 
     int timeout = timeLimit*1000;
@@ -226,10 +226,10 @@ void MainWindow::on_ScoringButton_clicked()
     case 2: cppstdoption="-std=c++14"; break;
     }
 
-    outexcelfile.write(0,0,"ID");
+    outexcelfile.write(1,1,"ID");
     outexcelfile.save();
     for(int i=0;i<inputFileList.size();i++){
-        outexcelfile.write(0,i+1,"TC_"+QString::number(i));
+        outexcelfile.write(1,i+2,"TC_"+QString::number(i));
         outexcelfile.save();
     }
 
@@ -238,7 +238,7 @@ void MainWindow::on_ScoringButton_clicked()
         QString filename=temp_execute_folder.absolutePath()+"/"+codeFileList.at(i).baseName();
         QString thisfile=codeFileList.at(i).filePath();
 
-        outexcelfile.write(i+1,0,codeFileList.at(i).baseName());
+        outexcelfile.write(i+2,1,codeFileList.at(i).baseName());
 
         command.clear();
         if(extension=="c"){
@@ -262,7 +262,7 @@ void MainWindow::on_ScoringButton_clicked()
         gnu_process->waitForFinished();
         int comerr=gnu_process->exitCode();
         if(!comerr){
-            outexcelfile.write(i+1,1,"Compile Error");
+            outexcelfile.write(i+2,2,"Compile Error");
             outexcelfile.save();
         }
 
@@ -275,8 +275,9 @@ void MainWindow::on_ScoringButton_clicked()
             gnu_process->start(program);
             bool isTimeout = gnu_process->waitForFinished(timeout);
             if(isTimeout==false){
-                outexcelfile.write(i+1,j+1,"Time out");
+                outexcelfile.write(i+2,j+2,"Time out");
                 outexcelfile.save();
+                continue;
             }
         }
     }
@@ -296,6 +297,7 @@ void MainWindow::on_ScoringButton_clicked()
 //    //QMessageBox::warning(0,"output", output);
 //    gnu_process->terminate();
 //    //int i=myprocess->exitCode();
+    outexcelfile.saveAs(cellfile);
 
     ui->ScoringButton->setEnabled(true);
     ui->progressBar->setValue(100);
