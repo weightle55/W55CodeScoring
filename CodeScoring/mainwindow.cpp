@@ -230,6 +230,7 @@ void MainWindow::on_ScoringButton_clicked()
     timeLimit=timel.toDouble();
 
     int timeout = timeLimit*1000;
+    QMessageBox::warning(0,"No Initializing Error",QString::number(timeout));
 
     QString cstdoption="-std=c99";
     QString cppstdoption="-std=c++11";
@@ -296,7 +297,7 @@ void MainWindow::on_ScoringButton_clicked()
                 outexcelfile.saveAs(cellfile);
                 continue;
             }
-            if(isTimeout==true){
+            if(isTimeout!=0){
                 outexcelfile.write(i+2,j+2,"Time out");
                 outexcelfile.saveAs(cellfile);
                 continue;
