@@ -141,7 +141,14 @@ void MainWindow::on_ScoringButton_clicked()
 
     ui->ScoringButton->setEnabled(false);
 
-    QString cellfile=xlsx_output_folder.absolutePath()+"/"+"result.xlsx";
+    QString cellfile;
+    if(ui->outputCelFile->text().isEmpty()){
+        cellfile=xlsx_output_folder.absolutePath()+"/"+ "default_result" +".xlsx";
+    }
+    else{
+        cellfile=xlsx_output_folder.absolutePath()+"/"+ ui->outputCelFile->text() +".xlsx";
+    }
+
     outexcelfile.saveAs(cellfile);
 
     QProcessEnvironment env= QProcessEnvironment::systemEnvironment();
@@ -230,7 +237,7 @@ void MainWindow::on_ScoringButton_clicked()
     timeLimit=timel.toDouble();
 
     int timeout = timeLimit*1000;
-    QMessageBox::warning(0,"No Initializing Error",QString::number(timeout));
+    //QMessageBox::warning(0,"No Initializing Error",QString::number(timeout));
 
     QString cstdoption="-std=c99";
     QString cppstdoption="-std=c++11";
@@ -288,16 +295,19 @@ void MainWindow::on_ScoringButton_clicked()
             QString savedtxt=codeFileList.at(i).baseName()+"out"+QString::number(j)+".txt";
             gnu_process->setStandardInputFile(inputFileList.at(j).filePath());
             gnu_process->setStandardOutputFile(scored_output_dir.absolutePath()+"/"+savedtxt);
+
+            QTime t_start=QTime::currentTime();
             gnu_process->start(program);
-            bool isTimeout = gnu_process->waitForFinished(timeout);
+            bool isTimeout = gnu_process->waitForFinished();
             int excode= gnu_process->exitCode();
             gnu_process->terminate();
+            QTime t_end=QTime::currentTime();
             if(excode==1){
                 outexcelfile.write(i+2,j+2,"Compile error");
                 outexcelfile.saveAs(cellfile);
                 continue;
             }
-            if(isTimeout!=0){
+            if(t_end.msec()-t_start.msec() > timeout){
                 outexcelfile.write(i+2,j+2,"Time out");
                 outexcelfile.saveAs(cellfile);
                 continue;

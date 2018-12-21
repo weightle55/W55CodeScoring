@@ -6,6 +6,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QtXlsx>
+#include <QTime>
 #include <QProcess>
 #include <QDebug>
 
